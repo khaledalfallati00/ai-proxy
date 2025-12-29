@@ -4,15 +4,16 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const GEMINI_API_KEY = "AIzaSyC3rmVW31SI8-BAcOVfhgsEivaEQssgQKs";
+// مفتاح API الجديد الخاص بك
+const GEMINI_API_KEY = "AIzaSyC7zxHSamUITwTTv7PNN589uCRl-Ap4CJ4";
 
-// الرابط المحدث والمتوافق مع الإصدار v1beta
+// الرابط المحدث والمتوافق مع v1beta وموديل flash
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('السيرفر يعمل وجاهز!'));
+app.get('/', (req, res) => res.send('السيرفر يعمل بنجاح بالمفتاح الجديد!'));
 
 app.post('/generate', async (req, res) => {
     try {
