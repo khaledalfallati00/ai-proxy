@@ -4,14 +4,16 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// مفتاحك الجديد الذي أرسلته
+// مفتاح API الخاص بك
 const GEMINI_API_KEY = "AIzaSyC3rmVW31SI8-BAcOVfhgsEivaEQssgQKs";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// الرابط المحدث لحل مشكلة الخطأ 404
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
 app.use(cors());
 app.use(express.json());
 
-// صفحة ترحيب للتأكد من عمل السيرفر عند فتحه بالمتصفح
+// صفحة ترحيب للتأكد من عمل السيرفر
 app.get('/', (req, res) => res.send('السيرفر يعمل بنجاح! جاهز لاستقبال طلبات التطبيق.'));
 
 app.post('/generate', async (req, res) => {
