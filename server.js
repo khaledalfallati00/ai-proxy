@@ -4,17 +4,16 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// مفتاح API الخاص بك
+// مفتاح API الخاص بك (تأكد من عدم وجود مسافات قبل أو بعده)
 const GEMINI_API_KEY = "AIzaSyC3rmVW31SI8-BAcOVfhgsEivaEQssgQKs";
 
-// الرابط المحدث لحل مشكلة الخطأ 404
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+// الرابط المحدث لنسخة مستقرة من الموديل
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
 app.use(cors());
 app.use(express.json());
 
-// صفحة ترحيب للتأكد من عمل السيرفر
-app.get('/', (req, res) => res.send('السيرفر يعمل بنجاح! جاهز لاستقبال طلبات التطبيق.'));
+app.get('/', (req, res) => res.send('السيرفر يعمل!'));
 
 app.post('/generate', async (req, res) => {
     try {
@@ -29,12 +28,12 @@ app.post('/generate', async (req, res) => {
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
-            const aiResponse = data.candidates[0].content.parts[0].text;
-            res.json({ result: aiResponse });
+        // فحص الرد وتوضيح الخطأ إذا وجد
+        if (data.candidates && data.candidates[0].content) {
+            res.json({ result: data.candidates[0].content.parts[0].text });
         } else {
-            console.error("Gemini Error:", data);
-            res.status(500).json({ error: "فشل Gemini في الرد. تأكد من إعدادات المفتاح." });
+            console.error("Gemini API Error:", JSON.stringify(data));
+            res.status(500).json({ error: "خطأ من جوجل: " + (data.error ? data.error.message : "رد غير معروف") });
         }
     } catch (error) {
         res.status(500).json({ error: "خطأ في الاتصال بالسيرفر" });
