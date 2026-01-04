@@ -7,27 +7,28 @@ app.use(cors());
 app.use(express.json());
 
 const ADMIN_KEY = "KA12345KA";
-let channels = [{ id: 1, name: "TechHub", desc: "أهلاً بك في قناة التقنية", link: "#" }];
+let channels = [{ id: 1, name: "TechHub", desc: "أهلاً بك في منصة الوعي التقني", link: "#" }];
 let pendingRequests = [];
 
-// مسار جلب القنوات المعتمدة
+// 1. جلب القنوات المعتمدة
 app.get('/channels', (req, res) => res.json(channels));
 
-// مسار جلب طلبات المراجعة (للأدمن فقط)
-app.get('/pending', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({message: "Unauthorized"});
-    res.json(pendingRequests);
-});
-
-// مسار إرسال طلب قناة جديدة من مستخدم
+// 2. إرسال طلب قناة جديدة
 app.post('/request-channel', (req, res) => {
-    pendingRequests.push({ id: Date.now(), ...req.body });
+    const newRequest = { id: Date.now(), ...req.body };
+    pendingRequests.push(newRequest);
     res.json({ message: "Success" });
 });
 
-// مسار الموافقة على القناة
+// 3. جلب الطلبات المعلقة (للمسؤول فقط)
+app.get('/pending', (req, res) => {
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
+    res.json(pendingRequests);
+});
+
+// 4. الموافقة على قناة ونشرها
 app.post('/approve-channel/:id', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({message: "Unauthorized"});
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
     const id = parseInt(req.params.id);
     const index = pendingRequests.findIndex(p => p.id === id);
     if (index > -1) {
@@ -37,4 +38,4 @@ app.post('/approve-channel/:id', (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log("Server Running"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
