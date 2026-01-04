@@ -3,40 +3,40 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// السماح لملف الـ HTML بالاتصال بالخادم
 app.use(cors());
 app.use(express.json());
 
-// كلمة المرور للدخول كمسؤول (تطابق الموجودة في الـ HTML)
-const ADMIN_KEY = "KA12345KA";
+const ADMIN_KEY = "KA12345KA"; // كلمة المرور
 
-// مصفوفات لتخزين القنوات في الذاكرة
+// مصفوفات التخزين
 let channels = [
-    { id: 1, name: "TechHub News", desc: "القناة الرسمية لأخبار المنصة والتقنية", link: "https://t.me/techhub" }
+    { id: 1, name: "قناة التقنية", desc: "أهلاً بك في TechHub", link: "#" }
 ];
 let pendingRequests = [];
 
-// --- المسارات البرمجية (API Endpoints) ---
+// --- المسارات المطلوبة لعمل كود الـ HTML ---
 
-// جلب القنوات العامة للعرض
+// 1. جلب القنوات
 app.get('/channels', (req, res) => res.json(channels));
 
-// استقبال طلب إضافة من مستخدم
+// 2. استقبال طلبات المستخدمين (هذا ما كان ينقصك)
 app.post('/request-channel', (req, res) => {
-    const newRequest = { id: Date.now(), ...req.body };
+    const { name, desc, link } = req.body;
+    if (!name || !link) return res.status(400).json({ message: "البيانات ناقصة" });
+    const newRequest = { id: Date.now(), name, desc, link };
     pendingRequests.push(newRequest);
-    res.json({ message: "Success" });
+    res.json({ message: "تم الاستلام" });
 });
 
-// جلب طلبات المراجعة (للأدمن فقط)
+// 3. جلب طلبات المراجعة للأدمن
 app.get('/pending', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("غير مصرح");
     res.json(pendingRequests);
 });
 
-// الموافقة على قناة ونشرها
+// 4. الموافقة على قناة
 app.post('/approve-channel/:id', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("غير مصرح");
     const id = parseInt(req.params.id);
     const index = pendingRequests.findIndex(p => p.id === id);
     if (index > -1) {
@@ -46,24 +46,17 @@ app.post('/approve-channel/:id', (req, res) => {
     }
 });
 
-// رفض طلب أو حذف قناة موجودة
+// 5. الحذف والرفض
 app.delete('/reject-channel/:id', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("غير مصرح");
     pendingRequests = pendingRequests.filter(p => p.id !== parseInt(req.params.id));
     res.json({ message: "Rejected" });
 });
 
 app.delete('/delete-channel/:id', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
+    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("غير مصرح");
     channels = channels.filter(c => c.id !== parseInt(req.params.id));
     res.json({ message: "Deleted" });
-});
-
-// إضافة مباشرة من الأدمن
-app.post('/add-channel', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).send("Unauthorized");
-    channels.push({ id: Date.now(), ...req.body });
-    res.json({ message: "Added" });
 });
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
